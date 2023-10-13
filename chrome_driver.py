@@ -10,8 +10,18 @@ from selenium.webdriver.common.action_chains import ActionChains
 from utils.logger import log
 import pyperclip
 import json
-# import pcap
-# import dpkt
+import subprocess
+import signal
+
+login_cookie = {
+    "name": "SESSDATA",
+    "value": "7cdb20b5,1709952538,2139a*91",
+    "domain": ".bilibili.com",
+    "path": "/",
+    "httpOnly": False,
+    "HostOnly": False,
+    "Secure": False
+}
 
 class ChromeDriver:
     # global infolist=[]
@@ -64,32 +74,25 @@ class ChromeDriver:
             if proxy:
                 self.opt.add_argument('--proxy-server=%s' % proxy)
             with webdriver.Chrome(options=self.opt) as browser:
+                browser.add_cookie(login_cookie)
+                # 让B站强制使用H.264编码器
+
                 # 打开浏览器
                 browser.get("https://www.bilibili.com/")
                 # 移动鼠标
-                browser.find_element(By.CLASS_NAME,'header-login-entry').click()
-                sleep(1)
+                # browser.find_element(By.CLASS_NAME,'header-login-entry').click()
+                # sleep(1)
                 #登陆系统
-                browser.find_element(By.XPATH,'/html/body/div[3]/div/div[4]/div[2]/form/div[1]/input').send_keys("15136882846")
-                browser.find_element(By.XPATH,'/html/body/div[3]/div/div[4]/div[2]/form/div[3]/input').send_keys("secret00")
-                browser.find_element(By.XPATH,'/html/body/div[3]/div/div[4]/div[2]/div[2]/div[2]').click()
-                sleep(10)
+                # browser.find_element(By.XPATH,'/html/body/div[3]/div/div[4]/div[2]/form/div[1]/input').send_keys("15136882846")
+                # browser.find_element(By.XPATH,'/html/body/div[3]/div/div[4]/div[2]/form/div[3]/input').send_keys("secret00")
+                # browser.find_element(By.XPATH,'/html/body/div[3]/div/div[4]/div[2]/div[2]/div[2]').click()
+                # sleep(10)
                 #打开指定视频
                 ATIME = time.time()
                 browser.get(ip)
-                playinfo = browser.execute_script("return window.__playinfo__")                
+                       
                 pstime = time.time()#播放请求时间
-                #path = '''//*[@id="bilibili-player"]//button[@class='bpx-player-ctrl-btn-icon']'''
-                #log.info(ip)
-                # 等待元素渲染完毕再点击播放按钮
-                # WebDriverWait(browser, 40).until(browser.find_element(By.XPATH,path))
-                # su = browser.find_element_by_xpath(path)
-                # su.click()
-                #抓取状态
-                #  模拟点击视频自动播放
-                #driver.find_element(By.CLASS_NAME,'bpx-player-ctrl-btn.bpx-player-ctrl-play').click()#播放按钮
-                #播放状态                
-                #print("all Time s%:",BTIME - ATIME)
+            
                 title="url\t启播时延\t卡顿次数\t时间\t当前播放时长\t视频时长\t清晰度\t播放倍速\t状态信息"
                 print(title)
                 infolist.append(title)
@@ -142,11 +145,12 @@ class ChromeDriver:
                             if ct == vl:
                                 break
                     # sleep(1)
+                playinfo = browser.execute_script("return window.__playinfo__")
                 todaytime = time.strftime("%Y-%m-%d", time.localtime(time.time()))
                 if len(infolist) > 1:
                     filepath=os.path.abspath('.')                    
-                    filenamenew = 'log_'+todaytime + '.txt'
-                    file = open(filepath+'\\'+filenamenew, 'a+', encoding='utf-8')
+                    log_file = 'log_'+todaytime + '.txt'
+                    file = open(filepath+'\\'+log_file, 'a+', encoding='utf-8')
                     str = '\n'.join(n for n in infolist)
                     file.write(str)
                     file.write('\n')
@@ -156,16 +160,16 @@ class ChromeDriver:
                 cpinfo.click()
                 data = pyperclip.paste()
                 filepath=os.path.abspath('.')
-                filenamenew = 'playInfo_log_'+todaytime + '.txt'
-                file = open(filepath+'\\'+filenamenew, 'a+', encoding='utf-8')
+                source_info_file = 'playInfo_log_'+todaytime + '.txt'
+                file = open(filepath+'\\'+source_info_file, 'a+', encoding='utf-8')
                 # str = '\n'.join(n for n in infolist)
                 file.write(data)
                 file.close()
                 if len(playinfo) > 1:
                     filepath=os.path.abspath('.')
                     todaytime = time.strftime("%Y-%m-%d", time.localtime(time.time()))
-                    filenamenew = 'playinfo_'+todaytime + '.txt'
-                    file = open(filepath+'\\'+filenamenew, 'a+', encoding='utf-8')
+                    play_info_file = 'playinfo_'+todaytime + '.txt'
+                    file = open(filepath+'\\'+play_info_file, 'a+', encoding='utf-8')
                     # str = '\n'.join(n for n in playinfo.data)
                     # file.write(str)
                     str = json.dumps(playinfo, indent=4)
@@ -176,84 +180,62 @@ class ChromeDriver:
                 browser.quit()
         except Exception as e:
             log.error(e)
+        return log_file,source_info_file,play_info_file
 
-    def play_list(self, ip_list):
+    def play_list(self, ip_list, net_interface):
         for ip in ip_list:
-            # TODO 播放前开始抓包
-            self.play(ip)
-            # TODO 播放结束后停止抓包
-            # TODO 转移抓包文件和日志到指定目录
+            # 播放前开始抓包
+            capture_proc, pcap_path = capturePcap(net_interface)
+            log_file, source_info_file, play_info_file = self.play(ip)
+            stopCapture(capture_proc)
+            moveOutputFiles(pcap_path, log_file, source_info_file, play_info_file, ip)
 
     def play_loop(self, ip_list):
         while True:
             self.play_list(ip_list)
 
-# 抓包：param1 eth_name 网卡名
-# def captureData(eth_name):
-#     pkt = pcap.pcap(eth_name, promisc=True, immediate=True, timeout_ms=50)
-#     # filter method
-#     filters = {
-#         'DNS': 'udp port 53',
-#         'HTTP': 'tcp port 80'
-#     }
-#     # pkt.setfilter(filters['HTTP'])
-
-#     pcap_filepath = 'd:/pkts_{}.pcap'.format(time.strftime("%Y%m%d-%H%M%S",
-#         time.localtime()))
-#     pcap_file = open(pcap_filepath, 'wb')
-#     writer = dpkt.pcap.Writer(pcap_file)
-#     print('Start capture...')
-#     try:
-#         pkts_count = 0
-#         for ptime, pdata in pkt:
-#             writer.writepkt(pdata, ptime)
-#             # anlysisData(pdata)
-#             printRawPkt(ptime, pdata)
-#             pkts_count += 1
-#     except KeyboardInterrupt as e:
-#         writer.close()
-#         pcap_file.close()
-#         if not pkts_count:
-#             os.remove(pcap_filepath)
-#         print('%d packets received'%(pkts_count))
-# #网卡名称
-# if 'Windows' in platform.platform():
-#     import winreg as wr
+def moveOutputFiles(pcap_name, log_file, source_info_file, play_info_file, ip):
+    """
+    :param pcap_path: pcap文件路径
+    :param log_file: 日志文件路径
+    :param source_info_file: 播放源信息文件路径
+    :param play_info_file: 播放信息文件路径
+    :param ip: 播放地址
+    :return:
+    """
+    # 移动文件到指定目录
+    folder = 'output'
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    vid = ip.split('/')[-1]
+    folder = os.path.join(folder, vid)
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    os.rename(pcap_name, os.path.join(folder, pcap_name))
+    os.rename(log_file, os.path.join(folder, log_file))
+    os.rename(source_info_file, os.path.join(folder, source_info_file))
+    os.rename(play_info_file, os.path.join(folder, play_info_file))
 
 
-# IF_REG = r'SYSTEM\CurrentControlSet\Control\Network\{4d36e972-e325-11ce-bfc1-08002be10318}'
-# def getInterfaceByName(name):
-#     '''Get guid of interface from regedit of windows system
-#     Args:
-#         name: interface name
-#     Returns:
-#         An valid guid value or None.
-#     Example:
-#         getInterfaceByName('eth0')
-#     reg = wr.ConnectRegistry(None, wr.HKEY_LOCAL_MACHINE)
-#     reg_key = wr.OpenKey(reg, IF_REG)
-#     for i in range(wr.QueryInfoKey(reg_key)[0]):
-#         subkey_name = wr.EnumKey(reg_key, i)
-#         try:
-#             reg_subkey = wr.OpenKey(reg_key, subkey_name + r'\Connection')
-#             Name = wr.QueryValueEx(reg_subkey, 'Name')[0]
-#             wr.CloseKey(reg_subkey)
-#             if Name == name:
-#                 return r'\Device\NPF_' + subkey_name
-#         except FileNotFoundError as e:
-#             pass
+def capturePcap(interface):
+    """
+    :param interface: 网卡名
+    :return:
+    """
+    # 启动tshark进程并抓包
+    pcap_name = 'captured.pcap'
+    tshark_cmd = ['tshark', '-i', interface, '-w', pcap_name]
+    tshark_proc = subprocess.Popen(tshark_cmd, stdout=subprocess.DEVNULL)
+    return tshark_proc, pcap_name
 
-#     return None
-# # 抓包：param1 eth_name 网卡名，如：eth0,eth3。 param2 p_type 日志捕获类型 1：sdk日志用例分析 2：目标域名过滤输出 3：原始数据包
-# def catch_pack(eth_name="enp5s0", packet_type=None):
-#     sniffer = pcap.pcap(eth_name)
-#     sniffer.setfilter("tcp")            # 只抓取TCP包
-#     # sniffer.setfilter('tcp port 80')  # 设置监听过滤器
-#     if sniffer:
-#         for packet_time, packet_data in sniffer:  # packet_time为收到的时间，packet_data为收到的数据
-#             th = threading.Thread(target=check_pack, args=(packet_time, packet_data, packet_type))
-#             th.setDaemon(True)
-#             th.start()
+def stopCapture(tshark_proc):
+    """
+    :param tshark_proc: tshark进程
+    :return:
+    """
+    # 停止抓包 ctrl + c
+    tshark_proc.send_signal(signal.SIGTERM)
+    tshark_proc.wait()
 
 if __name__ == '__main__':
     from utils.bili_pool import BiliPool

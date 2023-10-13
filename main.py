@@ -22,6 +22,8 @@ play_list = [
     'https://www.bilibili.com/video/BV1xz4y1g7dX',
 ]
 
+net_interface = 'WLAN'
+
 #FirefoxDriver().play_loop(ip)
 # ChromeDriver().play_loop(ip)
-ChromeDriver().play_list(play_list)
+ChromeDriver().play_list(play_list, net_interface=net_interface)
