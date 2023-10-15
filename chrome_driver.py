@@ -27,7 +27,8 @@ class ChromeDriver:
     # global infolist=[]
     def __init__(self, head_less=False):
         opt = webdriver.ChromeOptions()
-        opt.add_argument('--window-size=1000,800')  # 窗口大小会有影响.
+        # opt.add_argument('--window-size=1000,800')  # 窗口大小会有影响.
+        opt.add_argument('--start-maximized')
         if head_less:
             opt.add_argument('--headless')  # 无界面化.
             opt.add_argument('--disable-gpu')  # 配合上面的无界面化.
@@ -40,9 +41,9 @@ class ChromeDriver:
             pi=browser.find_element(By.CLASS_NAME,'bpx-player-info-container')#播放信息窗口
             if not pi.is_displayed():
                 ActionChains(browser).context_click(we).perform()# 鼠标右键点击
-                sleep(1)
-                vinfo=browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
-                vinfo.click()
+                # check if the element is visible
+                right_click_menu = browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
+                right_click_menu.click()
                 
             rls=browser.find_element(By.XPATH,'/html/body/div[2]/div[2]/div[1]/div[2]/div[2]/div/div/div[1]/div[1]/div[15]/div[2]').text
             rllist=rls.split("\n")
@@ -52,13 +53,13 @@ class ChromeDriver:
                     break
         except Exception as e:
             ActionChains(browser).context_click(we).perform()# 鼠标右键点击
-            sleep(1)
             log.error("错误2")     
             try:      
                 vinfo=browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
                 vinfo.click()
             except Exception as e:
-                log.error(e)
+                # log.error(e)
+                pass
         return restr
     def play(self, ip, proxy=None):
         """
@@ -66,33 +67,28 @@ class ChromeDriver:
         :param ip: 播放地址
         :return:
         """
-        # TODO 实现自动登录或者cookie登录
         # TODO 设置编码器H.264
 
         infolist=[]
+        log_file, play_info_file, source_info_file = None, None, None
         try:
             if proxy:
                 self.opt.add_argument('--proxy-server=%s' % proxy)
             with webdriver.Chrome(options=self.opt) as browser:
-                browser.add_cookie(login_cookie)
                 # 让B站强制使用H.264编码器
-
                 # 打开浏览器
                 browser.get("https://www.bilibili.com/")
-                # 移动鼠标
-                # browser.find_element(By.CLASS_NAME,'header-login-entry').click()
-                # sleep(1)
-                #登陆系统
-                # browser.find_element(By.XPATH,'/html/body/div[3]/div/div[4]/div[2]/form/div[1]/input').send_keys("15136882846")
-                # browser.find_element(By.XPATH,'/html/body/div[3]/div/div[4]/div[2]/form/div[3]/input').send_keys("secret00")
-                # browser.find_element(By.XPATH,'/html/body/div[3]/div/div[4]/div[2]/div[2]/div[2]').click()
-                # sleep(10)
-                #打开指定视频
-                ATIME = time.time()
+                browser.add_cookie(login_cookie)
+                # browser.get("https://www.bilibili.com/")
+                browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_type', '2')")
+                browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_reset', '1.5.2')")
+                # wait input
+                # input("Press any key to continue...")
+                # 编辑localStroage选择H.264编码
+                # browser.execute_script("window.localStorage.setItem('bilibili_player_codec_prefer_type', '2');")
+                # ATIME = time.time()
                 browser.get(ip)
-                       
                 pstime = time.time()#播放请求时间
-            
                 title="url\t启播时延\t卡顿次数\t时间\t当前播放时长\t视频时长\t清晰度\t播放倍速\t状态信息"
                 print(title)
                 infolist.append(title)
@@ -100,6 +96,10 @@ class ChromeDriver:
                 kdflag=0 #卡顿标志
                 startflag=0 #是否开始播放
                 startDelay=0 #启播时延
+                # wait bilibili-player show
+                WebDriverWait(browser, 20, 0.1).until(
+                    EC.presence_of_element_located((By.ID, 'bilibili-player'))
+                )
                 while True:
                     # 移动鼠标
                     we=browser.find_element(By.ID,'bilibili-player')
@@ -177,13 +177,15 @@ class ChromeDriver:
                     file.write('\n')
                     file.close()
                 #退出浏览器
-                browser.quit()
+                # browser.quit()
         except Exception as e:
             log.error(e)
         return log_file,source_info_file,play_info_file
 
     def play_list(self, ip_list, net_interface):
         for ip in ip_list:
+            # 关掉现有的tshark进程
+            subprocess.call('taskkill /F /IM tshark.exe', shell=True, stderr=subprocess.DEVNULL)
             # 播放前开始抓包
             capture_proc, pcap_path = capturePcap(net_interface)
             log_file, source_info_file, play_info_file = self.play(ip)
@@ -203,6 +205,18 @@ def moveOutputFiles(pcap_name, log_file, source_info_file, play_info_file, ip):
     :param ip: 播放地址
     :return:
     """
+    # 播放失败，删除文件
+    if not log_file or not source_info_file or not play_info_file or not pcap_name:
+        if os.path.exists(log_file):
+            os.remove(log_file)
+        if os.path.exists(source_info_file):
+            os.remove(source_info_file)
+        if os.path.exists(play_info_file):
+            os.remove(play_info_file)
+        if os.path.exists(pcap_name):
+            os.remove(pcap_name)
+        return
+
     # 移动文件到指定目录
     folder = 'output'
     if not os.path.exists(folder):
@@ -225,7 +239,7 @@ def capturePcap(interface):
     # 启动tshark进程并抓包
     pcap_name = 'captured.pcap'
     tshark_cmd = ['tshark', '-i', interface, '-w', pcap_name]
-    tshark_proc = subprocess.Popen(tshark_cmd, stdout=subprocess.DEVNULL)
+    tshark_proc = subprocess.Popen(tshark_cmd)
     return tshark_proc, pcap_name
 
 def stopCapture(tshark_proc):
@@ -236,7 +250,8 @@ def stopCapture(tshark_proc):
     # 停止抓包 ctrl + c
     tshark_proc.send_signal(signal.SIGTERM)
     tshark_proc.wait()
-
+    subprocess.call('taskkill /F /IM tshark.exe', shell=True)
+    
 if __name__ == '__main__':
     from utils.bili_pool import BiliPool
     # if 'Windows' in platform.platform():

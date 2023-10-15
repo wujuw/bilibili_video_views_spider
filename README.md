@@ -29,3 +29,16 @@ desired_capabilities = DesiredCapabilities.CHROME
 desired_capabilities["pageLoadStrategy"] = "none"
 driver = webdriver.Chrome(executable_path='chromedriver.exe')
 
+现在不需要每次手动登录B站
+
+在 main.py 中修改 net_interface 变量，为抓包的网卡名，可以通过 'tshark -D' 查看，也可以在 Wireshark 中查看，示例：
+tshark -D:
+![Alt text](image.png)
+Wireshark:
+![Alt text](image-1.png)
+
+在 main.py 中可以通过 play_list 配置播放列表，脚本会自动播放每个视频并自动抓取流量和日志，并将每个视频的流量和日志保存到 'output\视频ID' 目录下
+
+播放过程中请不要将浏览器最小化，最小化是视频会暂停播放，但可以用其他窗口遮挡住浏览器窗口
+
+目前每次运行脚本前还需要手动设置网络质差，后续可能会实现自动设置质差

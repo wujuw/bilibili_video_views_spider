@@ -5,9 +5,9 @@ from utils.bili_pool import BiliPool
 # ip = BiliPool().pool
 
 play_list = [
-    'https://www.bilibili.com/video/av430905526',
-    'https://www.bilibili.com/video/BV11C4y1R7PT',
     'https://www.bilibili.com/video/BV1kF411U7iv',
+    'https://www.bilibili.com/video/BV11C4y1R7PT',
+    'https://www.bilibili.com/video/av430905526',
     'https://www.bilibili.com/video/BV1R94y1h7qa',
     'https://www.bilibili.com/video/BV13w411U7GG',
     'https://www.bilibili.com/video/BV1Gz4y1F7kk',
@@ -22,7 +22,8 @@ play_list = [
     'https://www.bilibili.com/video/BV1xz4y1g7dX',
 ]
 
-net_interface = 'WLAN'
+# net_interface = 'WLAN'
+net_interface = '以太网'
 
 #FirefoxDriver().play_loop(ip)
 # ChromeDriver().play_loop(ip)
