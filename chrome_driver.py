@@ -81,7 +81,7 @@ class ChromeDriver:
                 browser.add_cookie(login_cookie)
                 # browser.get("https://www.bilibili.com/")
                 browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_type', '2')")
-                browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_reset', '1.5.2')")
+                browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_reset', '1.5.2')") # 1.5.2 可能后续会变化
                 # wait input
                 # input("Press any key to continue...")
                 # 编辑localStroage选择H.264编码
