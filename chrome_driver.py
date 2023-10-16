@@ -67,7 +67,6 @@ class ChromeDriver:
         :param ip: 播放地址
         :return:
         """
-        # TODO 设置编码器H.264
 
         infolist=[]
         log_file, play_info_file, source_info_file = None, None, None
