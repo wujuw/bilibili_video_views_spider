@@ -37,13 +37,18 @@ class ChromeDriver:
     def get_resolution(self,we,browser,startflag):
         # 复制播放信息
         restr=""
-        try:    
+        try: 
+            pi = browser.find_element(By.CLASS_NAME,'bpx-player-info-container')#播放信息窗口
+        except Exception as e:
+            ActionChains(browser).move_to_element(we).perform()
+            ActionChains(browser).context_click(we).perform()
+            try:
+                vinfo = browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
+                vinfo.click()
+            except Exception:
+                return restr
+        try:
             pi=browser.find_element(By.CLASS_NAME,'bpx-player-info-container')#播放信息窗口
-            if not pi.is_displayed():
-                ActionChains(browser).context_click(we).perform()# 鼠标右键点击
-                # check if the element is visible
-                right_click_menu = browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
-                right_click_menu.click()
                 
             rls=browser.find_element(By.XPATH,'/html/body/div[2]/div[2]/div[1]/div[2]/div[2]/div/div/div[1]/div[1]/div[15]/div[2]').text
             rllist=rls.split("\n")
@@ -53,7 +58,7 @@ class ChromeDriver:
                     break
         except Exception as e:
             ActionChains(browser).context_click(we).perform()# 鼠标右键点击
-            log.error("错误2")     
+            # log.error("错误2" + str(e))     
             try:      
                 vinfo=browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
                 vinfo.click()
@@ -110,7 +115,7 @@ class ChromeDriver:
                             petime = time.time()#播放开始时间
                             startDelay = petime-pstime
                             #抓取播放器日志开始
-                            rl =  self.get_resolution(we,browser,startflag)
+                            # rl =  self.get_resolution(we,browser,startflag)
                             startflag =1 
                             #抓取播放器日志结束
                     elif  startflag ==1:
