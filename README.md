@@ -34,7 +34,7 @@ driver = webdriver.Chrome(executable_path='chromedriver.exe')
 ## 当前版本
 ### 仍需要在脚本运行前手动配置质差
 ### 无需再手动登录
-### 视频播放列表可配置，在 main.py 中修改 play_list 变量
+### 视频播放列表可配置，可在 main.py 中修改 play_list 变量
 ### 每次运行脚本，将自动进行抓包和抓日志，脚本将自动播放 play_list 的每个视频，并将每个视频的流量和日志保存到 'output\视频ID' 目录下
 ### 目前配置了20个视频，即每次运行脚本将自动在当前的质差条件下采集20组数据
 
