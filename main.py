@@ -27,8 +27,8 @@ play_list = [
     'https://www.bilibili.com/video/BV1Tz4y1V7or', # 动画 37s
 ]
 
-# net_interface = 'WLAN'
-net_interface = '以太网'
+net_interface = 'WLAN'
+# net_interface = '以太网'
 
 #FirefoxDriver().play_loop(ip)
 # ChromeDriver().play_loop(ip)
