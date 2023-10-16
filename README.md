@@ -40,6 +40,8 @@ driver = webdriver.Chrome(executable_path='chromedriver.exe')
 
 ## 依赖
 ### tshark，需要将 tshark 加入环境变量
+### python paramiko 库，用于远程登录服务器
+### python pyyaml 库，用于解析配置文件
 
 ## 使用方法
 ### 1. 在 main.py 中修改 net_interface 变量，为抓包的网卡名，请选择流量经过的网卡，可以通过 'tshark -D' 查看，也可以在 Wireshark 中查看，示例：

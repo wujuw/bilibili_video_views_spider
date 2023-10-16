@@ -255,13 +255,3 @@ def stopCapture(tshark_proc):
     tshark_proc.send_signal(signal.SIGTERM)
     tshark_proc.wait()
     subprocess.call('taskkill /F /IM tshark.exe', shell=True, stderr=subprocess.DEVNULL)
-    
-if __name__ == '__main__':
-    from utils.bili_pool import BiliPool
-    # if 'Windows' in platform.platform():
-    #     iface = getInterfaceByName('WLAN')
-    # else:
-    #     iface = 'enp2s0'
-    # captureData(iface)
-    ip = BiliPool().pop()
-    ChromeDriver().play(ip)
