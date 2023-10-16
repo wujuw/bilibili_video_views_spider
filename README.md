@@ -1,4 +1,4 @@
-## driver国内镜像
+<!-- ## driver国内镜像
 http://npm.taobao.org/mirrors/chromedriver/
 
 ## bilibili_video_views_spider
@@ -29,17 +29,25 @@ desired_capabilities = DesiredCapabilities.CHROME
 desired_capabilities["pageLoadStrategy"] = "none"
 driver = webdriver.Chrome(executable_path='chromedriver.exe')
 
-现在不需要每次手动登录B站
-脚本依赖 tshark 进行抓包，需要将 tshark 加入环境变量
+--- -->
 
-在 main.py 中修改 net_interface 变量，为抓包的网卡名，可以通过 'tshark -D' 查看，也可以在 Wireshark 中查看，示例：
-tshark -D:
+## 当前版本
+### 仍需要在脚本运行前手动配置质差
+### 无需再手动登录
+### 视频播放列表可配置，在 main.py 中修改 play_list 变量
+### 每次运行脚本，将自动进行抓包和抓日志，脚本将自动播放 play_list 的每个视频，并将每个视频的流量和日志保存到 'output\视频ID' 目录下
+### 目前配置了20个视频，即每次运行脚本将自动在当前的质差条件下采集20组数据
+
+## 依赖
+### tshark，需要将 tshark 加入环境变量
+
+## 使用方法
+### 1. 在 main.py 中修改 net_interface 变量，为抓包的网卡名，请选择流量经过的网卡，可以通过 'tshark -D' 查看，也可以在 Wireshark 中查看，示例：
+### tashark -D:
 ![Alt text](image.png)
-Wireshark:
+### Wireshark:
 ![Alt text](image-1.png)
+### 2. 手动设置质差，运行 main.py，脚本将自动播放 play_list 中的每个视频，并将每个视频的流量和日志保存到 'output\视频ID' 目录下，运行结束可以将 output 目录重命名，以采集新的数据
+### 3. 视频播放过程中请不要将浏览器最小化，最小化时视频会暂停播放，但可以被其他窗口遮挡
 
-在 main.py 中可以通过 play_list 配置播放列表，脚本会自动播放每个视频并自动抓取流量和日志，并将每个视频的流量和日志保存到 'output\视频ID' 目录下
-
-播放过程中请不要将浏览器最小化，最小化是视频会暂停播放，但可以用其他窗口遮挡住浏览器窗口
-
-目前每次运行脚本前还需要手动设置网络质差，后续可能会实现自动设置质差
+## 目前每次运行脚本前还需要手动设置网络质差，后续可能会实现自动设置质差

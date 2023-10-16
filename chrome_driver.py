@@ -254,7 +254,7 @@ def stopCapture(tshark_proc):
     # 停止抓包 ctrl + c
     tshark_proc.send_signal(signal.SIGTERM)
     tshark_proc.wait()
-    subprocess.call('taskkill /F /IM tshark.exe', shell=True)
+    subprocess.call('taskkill /F /IM tshark.exe', shell=True, stderr=subprocess.DEVNULL)
     
 if __name__ == '__main__':
     from utils.bili_pool import BiliPool
