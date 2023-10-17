@@ -22,11 +22,18 @@ play_list: # 视频播放列表
 
 net_interface: WLAN # 抓包网络接口
 
-ssh_host: 192.168.31.244
-ssh_port: 22
-ssh_username: root
-ssh_password: password
+play_resolutions: # 目前还不能配置
+    # - 1080p
+    # - 720p
+    # - 480p
+    # - 360p
+    - auto
 
-net_cond_list:
+# ssh_host: 192.168.31.244
+# ssh_port: 22
+# ssh_username: root
+# ssh_password: password
+
+# net_cond_list:
 
 

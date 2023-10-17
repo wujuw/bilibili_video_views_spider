@@ -7,11 +7,12 @@ with open(configure_file, 'r', encoding='utf-8') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
     play_list = config['play_list']
     net_interface = config['net_interface']
-    net_cond_list = config['net_cond_list']
-    ssh_host = config['ssh_host']
-    ssh_port = config['ssh_port']
-    ssh_username = config['ssh_username']
-    ssh_password = config['ssh_password']
+    play_resolutions = config['play_resolutions']
+    # net_cond_list = config['net_cond_list']
+    # ssh_host = config['ssh_host']
+    # ssh_port = config['ssh_port']
+    # ssh_username = config['ssh_username']
+    # ssh_password = config['ssh_password']
 
 # ssh_client = paramiko.SSHClient()
 # ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -46,7 +47,7 @@ with open(configure_file, 'r', encoding='utf-8') as f:
 #FirefoxDriver().play_loop(ip)
 # ChromeDriver().play_loop(ip)
 
-ChromeDriver().play_list(play_list, net_interface=net_interface)
+# ChromeDriver().play_list(play_list, net_interface=net_interface)
 
 # TODO 自动质差控制
 # net_cond_list = []
@@ -59,8 +60,5 @@ ChromeDriver().play_list(play_list, net_interface=net_interface)
 #     ssh_client.exec_command('tc qdisc add dev {} root handle 1: htb'.format(net_interface))
 #     ssh_client.exec_command('tc class add dev {} parent 1: classid 1:1 htb rate {}kbit'.format(net_interface, net_cond['rate']))
 
-
-# for net_cond in net_cond_list:
-#     net_cond_configure(net_cond)
-#     ChromeDriver().play_list(play_list, net_interface=net_interface)
-# ssh_client.close()
+for play_resolution in play_resolutions:
+    ChromeDriver().play_list(play_list, net_interface=net_interface, play_resolution=play_resolution)
