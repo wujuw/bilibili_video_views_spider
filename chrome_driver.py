@@ -131,15 +131,15 @@ class ChromeDriver:
                             rowData="%s\t%s\t%s\t%s\t%s\t%s\t%s"%(ip,startDelay,tm,ct,vl,rl,ps,)
                             print(rowData)
                             infolist.append(rowData)
-                            if ct >= vl - 4 and not cpinfo_flag:
-                                ActionChains(browser).move_to_element(we).perform()
-                                ActionChains(browser).context_click(we).perform()
-                                try:
-                                    vinfo = browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
-                                    vinfo.click()
-                                    cpinfo_flag = True
-                                except Exception:
-                                    pass
+                            # if ct >= vl - 4 and not cpinfo_flag:
+                            #     ActionChains(browser).move_to_element(we).perform()
+                            #     ActionChains(browser).context_click(we).perform()
+                            #     try:
+                            #         vinfo = browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
+                            #         vinfo.click()
+                            #         cpinfo_flag = True
+                            #     except Exception:
+                            #         pass
                             if isEnded or ct == vl:
                                 break
                             time.sleep(0.5)
@@ -159,21 +159,23 @@ class ChromeDriver:
                     file.write('\n')
                     file.close()
                 #播放结束，保存播放日志
-                if cpinfo_flag:
-                    cpinfo=browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[1]/div[1]/div[15]/div[3]/div/span[2]')
-                    cpinfo.click()
-                    data = pyperclip.paste()
+                # if cpinfo_flag:
+                # cpinfo=browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[1]/div[1]/div[15]/div[3]/div/span[2]')
+                # cpinfo.click()
+                # data = pyperclip.paste()
+                data = browser.execute_script("return player.getFormattedLogs(0)")
+                if len(data) > 1:
                     filepath=os.path.abspath('.')
-                    source_info_file = 'playInfo_log_'+todaytime + '.txt'
-                    file = open(filepath+'\\'+source_info_file, 'a+', encoding='utf-8')
+                    play_info_file = 'playInfo_log_'+todaytime + '.txt'
+                    file = open(filepath+'\\'+play_info_file, 'a+', encoding='utf-8')
                     # str = '\n'.join(n for n in infolist)
                     file.write(data)
                     file.close()
                 if len(playinfo) > 1:
                     filepath=os.path.abspath('.')
                     todaytime = time.strftime("%Y-%m-%d", time.localtime(time.time()))
-                    play_info_file = 'playinfo_'+todaytime + '.txt'
-                    file = open(filepath+'\\'+play_info_file, 'a+', encoding='utf-8')
+                    source_info_file = 'playinfo_'+todaytime + '.txt'
+                    file = open(filepath+'\\'+source_info_file, 'a+', encoding='utf-8')
                     # str = '\n'.join(n for n in playinfo.data)
                     # file.write(str)
                     str = json.dumps(playinfo, indent=4)
