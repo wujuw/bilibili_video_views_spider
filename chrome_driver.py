@@ -31,7 +31,7 @@ class ChromeDriver:
         opt = webdriver.ChromeOptions()
         # opt.add_argument('--window-size=1000,800')  # 窗口大小会有影响.
         opt.add_argument('--start-maximized')
-        opt.set_capability('pageLoadStrategy', 'none')
+        opt.set_capability('pageLoadStrategy', 'none') # 使 brower.get 异步加载
         if head_less:
             opt.add_argument('--headless')  # 无界面化.
             opt.add_argument('--disable-gpu')  # 配合上面的无界面化.
@@ -42,37 +42,7 @@ class ChromeDriver:
         video_height = media_info['videoHeight']
         video_width = media_info['videoWidth']
         return str(video_width) + 'x' + str(video_height)
-        # # 复制播放信息
-        # restr=""
-        # try: 
-        #     pi = browser.find_element(By.CLASS_NAME,'bpx-player-info-container')#播放信息窗口
-        # except Exception as e:
-        #     ActionChains(browser).move_to_element(we).perform()
-        #     ActionChains(browser).context_click(we).perform()
-        #     try:
-        #         vinfo = browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
-        #         vinfo.click()
-        #     except Exception:
-        #         return restr
-        # try:
-        #     pi=browser.find_element(By.CLASS_NAME,'bpx-player-info-container')#播放信息窗口
-                
-        #     rls=browser.find_element(By.XPATH,'/html/body/div[2]/div[2]/div[1]/div[2]/div[2]/div/div/div[1]/div[1]/div[15]/div[2]').text
-        #     rllist=rls.split("\n")
-        #     for item in rllist:
-        #         if item.find("Resolution")>=0:
-        #             restr=item[item.index(": ")+2:item.index("@")]
-        #             break
-        # except Exception as e:
-        #     ActionChains(browser).context_click(we).perform()# 鼠标右键点击
-        #     # log.error("错误2" + str(e))     
-        #     try:      
-        #         vinfo=browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
-        #         vinfo.click()
-        #     except Exception as e:
-        #         # log.error(e)
-        #         pass
-        # return restr
+        
     def play(self, ip, play_resolution, proxy=None):
         """
         :param proxy: 代理
@@ -99,20 +69,7 @@ class ChromeDriver:
                 browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_reset', '1.5.2')") # 1.5.2 可能后续会变化
                 # recommend_auto_play
                 browser.execute_script("localStorage.setItem('recommend_auto_play', 'close')")
-                # wait input
-                # input("Press any key to continue...")
-                # 编辑localStroage选择H.264编码
-                # browser.execute_script("window.localStorage.setItem('bilibili_player_codec_prefer_type', '2');")
-                # ATIME = time.time()
-                # cancel timeout
-
-                # browser.set_page_load_timeout(5)
-                # try:
-                #     browser.get(ip)
-                # except Exception as e:
-                #     print("timeout, skip")
-                # browser.execute_script("return window.location.href = '{}'".format(ip))
-                    # return log_file, source_info_file, play_info_file
+                
                 browser.get(ip)
                 print("播放地址: ",ip)
                 title="url\t启播时延\t时间\t当前播放时长\t视频时长\t清晰度\t播放倍速"
@@ -152,14 +109,6 @@ class ChromeDriver:
                             else: 
                                 time.sleep(0.1)
                         elif  startflag ==1:
-                            #log.info(petime)
-                            # if st !='':#出现卡顿
-                            #     if kdflag==0:
-                            #         kd = kd +1
-                            #         kdflag=1
-                            # elif st =='':#卡顿消除
-                            #     kdflag=0
-                            #抓取播放器日志开始
                             rl =  self.get_resolution(we,browser,startflag)
                             #抓取播放器日志结束
                             tm=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -173,15 +122,7 @@ class ChromeDriver:
                             ct = math.ceil(ct)
                             vl = math.ceil(vl)
                             isEnded = browser.execute_script("return player.isEnded()")
-                            #print("视频时长::",vl)     #视频时长
-                            #rl=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-quality-result').text
-                            #print("清晰度: ",rl)    #清晰度
-                            # ps=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-playbackrate-result').text
-                            # ps = browser.execute_script("return player.getPlaybackRate()")
-                            # if ps=='倍速':
                             ps='1x'
-                            #print("播放倍速: ",ps)    #播放倍速
-                            #print("播放信息:\n",browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div').text)
                             rowData="%s\t%s\t%s\t%s\t%s\t%s\t%s"%(ip,startDelay,tm,ct,vl,rl,ps,)
                             print(rowData)
                             infolist.append(rowData)
