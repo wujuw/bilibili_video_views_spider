@@ -110,7 +110,7 @@ class ChromeDriver:
                                 print('播放开始')
                                 startDelay = petime-pstime
                                 startflag =1 
-                                browser.execute_async_script('player.requestQuality(%s)' % resolution_qn[play_resolution])
+                                browser.execute_script('player.requestQuality(%s)' % resolution_qn[play_resolution])
                             else: 
                                 time.sleep(0.1)
                         elif  startflag ==1:
