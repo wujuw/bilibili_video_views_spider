@@ -45,7 +45,7 @@ class ChromeDriver:
             opt.add_argument('--disable-gpu')  # 配合上面的无界面化.
         self.opt = opt
 
-    def get_resolution(self,we,browser,startflag):
+    def get_resolution(self,browser):
         media_info = browser.execute_script("return player.getMediaInfo()")
         video_height = media_info['videoHeight']
         video_width = media_info['videoWidth']
@@ -92,7 +92,7 @@ class ChromeDriver:
                 print("播放器已加载")
                 pstime = time.time()#播放请求时间
                 cpinfo_flag = False
-                we=browser.find_element(By.ID,'bilibili-player')
+                # we=browser.find_element(By.ID,'bilibili-player')
                 while True:
                     try:
                         # 移动鼠标
@@ -114,7 +114,7 @@ class ChromeDriver:
                             else: 
                                 time.sleep(0.1)
                         elif  startflag ==1:
-                            rl =  self.get_resolution(we,browser,startflag)
+                            rl =  self.get_resolution(browser)
                             #抓取播放器日志结束
                             tm=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             # ActionChains(browser).move_to_element(we).perform()# 鼠标悬停 
