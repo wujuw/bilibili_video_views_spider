@@ -7,11 +7,13 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from utils.logger import log
 import pyperclip
 import json
 import subprocess
 import signal
+import math
 
 login_cookie = {
     "name": "SESSDATA",
@@ -29,13 +31,17 @@ class ChromeDriver:
         opt = webdriver.ChromeOptions()
         # opt.add_argument('--window-size=1000,800')  # 窗口大小会有影响.
         opt.add_argument('--start-maximized')
+        opt.set_capability('pageLoadStrategy', 'none')
         if head_less:
             opt.add_argument('--headless')  # 无界面化.
             opt.add_argument('--disable-gpu')  # 配合上面的无界面化.
         self.opt = opt
 
     def get_resolution(self,we,browser,startflag):
-        qn = browser.execute_script("player.get")
+        media_info = browser.execute_script("return player.getMediaInfo()")
+        video_height = media_info['videoHeight']
+        video_width = media_info['videoWidth']
+        return str(video_width) + 'x' + str(video_height)
         # # 复制播放信息
         # restr=""
         # try: 
@@ -79,60 +85,72 @@ class ChromeDriver:
         try:
             if proxy:
                 self.opt.add_argument('--proxy-server=%s' % proxy)
-            with webdriver.Chrome(options=self.opt) as browser:
+            with webdriver.Chrome(options=self.opt,) as browser:
                 # 让B站强制使用H.264编码器
                 # 打开浏览器
-                browser.set_page_load_timeout(5)
-                try:
-                    browser.get("https://www.bilibili.com/")
-                except Exception as e:
-                    print("timeout")
+
+                browser.get("https://www.bilibili.com/")
+                WebDriverWait(browser, 20, 0.5).until(
+                    EC.visibility_of_element_located((By.CLASS_NAME, 'bili-header__bar'))
+                )
                 browser.add_cookie(login_cookie)
                 # browser.get("https://www.bilibili.com/")
                 browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_type', '2')")
                 browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_reset', '1.5.2')") # 1.5.2 可能后续会变化
+                # recommend_auto_play
+                browser.execute_script("localStorage.setItem('recommend_auto_play', 'close')")
                 # wait input
                 # input("Press any key to continue...")
                 # 编辑localStroage选择H.264编码
                 # browser.execute_script("window.localStorage.setItem('bilibili_player_codec_prefer_type', '2');")
                 # ATIME = time.time()
                 # cancel timeout
-                browser.set_page_load_timeout(30)
-                try:
-                    browser.get(ip)
-                except Exception as e:
-                    print("timeout 30s, skip")
-                    return log_file, source_info_file, play_info_file
+
+                # browser.set_page_load_timeout(5)
+                # try:
+                #     browser.get(ip)
+                # except Exception as e:
+                #     print("timeout, skip")
+                # browser.execute_script("return window.location.href = '{}'".format(ip))
+                    # return log_file, source_info_file, play_info_file
+                browser.get(ip)
                 print("播放地址: ",ip)
-                pstime = time.time()#播放请求时间
-                title="url\t启播时延\t卡顿次数\t时间\t当前播放时长\t视频时长\t清晰度\t播放倍速\t状态信息"
+                title="url\t启播时延\t时间\t当前播放时长\t视频时长\t清晰度\t播放倍速"
                 print(title)
                 infolist.append(title)
-                kd=0 #卡顿次数
-                kdflag=0 #卡顿标志
                 startflag=0 #是否开始播放
                 startDelay=0 #启播时延
                 # wait bilibili-player show
                 WebDriverWait(browser, 20, 0.5).until(
-                    EC.presence_of_element_located((By.ID, 'bilibili-player'))
+                    EC.visibility_of_element_located((By.ID, 'bilibili-player'))
                 )
                 print("播放器已加载")
+                pstime = time.time()#播放请求时间
+                cpinfo_flag = False
+                we=browser.find_element(By.ID,'bilibili-player')
                 while True:
                     try:
                         # 移动鼠标
-                        we=browser.find_element(By.ID,'bilibili-player')
-                        ActionChains(browser).move_to_element(we).perform()# 鼠标悬停                    
-                        st=browser.find_element(By.CLASS_NAME,'bpx-player-state-buff-title').text
-                        isPaused = 
+                        # ActionChains(browser).move_to_element(we).perform()# 鼠标悬停                    
+                        # st=browser.find_element(By.CLASS_NAME,'bpx-player-state-buff-title').text
                         #print("状态信息:",st)
                         if startflag ==0:
-                            if st =='':#已经开始播放
+                            try: 
+                                paused = browser.execute_script("return player.isPaused()")
+                            except Exception as e:
+                                print('not found player')
+                                paused = True
+                            if not paused:#已经开始播放
                                 petime = time.time()#播放开始时间
+                                print('播放开始')
                                 startDelay = petime-pstime
                                 #抓取播放器日志开始
                                 # rl =  self.get_resolution(we,browser,startflag)
                                 startflag =1 
+                                # browser.execute_script("player.setAutoplay(false))")
                                 #抓取播放器日志结束
+                            else: 
+                                time.sleep(0.1)
                         elif  startflag ==1:
                             #log.info(petime)
                             # if st !='':#出现卡顿
@@ -145,27 +163,44 @@ class ChromeDriver:
                             rl =  self.get_resolution(we,browser,startflag)
                             #抓取播放器日志结束
                             tm=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            ActionChains(browser).move_to_element(we).perform()# 鼠标悬停 
-                            ct=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-time-current').text
+                            # ActionChains(browser).move_to_element(we).perform()# 鼠标悬停 
+                            # ct=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-time-current').text
+                            ct = browser.execute_script("return player.getCurrentTime()")
                             #print("当前播放时长: ",ct)     #当前播放时长
-                            vl=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-time-duration').text
+                            # vl=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-time-duration').text
+                            vl = browser.execute_script("return player.getDuration()")
+                            # ceil
+                            ct = math.ceil(ct)
+                            vl = math.ceil(vl)
+                            isEnded = browser.execute_script("return player.isEnded()")
                             #print("视频时长::",vl)     #视频时长
                             #rl=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-quality-result').text
                             #print("清晰度: ",rl)    #清晰度
-                            ps=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-playbackrate-result').text
-                            if ps=='倍速':
-                                ps='1x'
+                            # ps=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-playbackrate-result').text
+                            # ps = browser.execute_script("return player.getPlaybackRate()")
+                            # if ps=='倍速':
+                            ps='1x'
                             #print("播放倍速: ",ps)    #播放倍速
                             #print("播放信息:\n",browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div').text)
-                            rowData="%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s"%(ip,startDelay,kd,tm,ct,vl,rl,ps,st)
+                            rowData="%s\t%s\t%s\t%s\t%s\t%s\t%s"%(ip,startDelay,tm,ct,vl,rl,ps,)
                             print(rowData)
                             infolist.append(rowData)
-                            if ct !='':
-                                if ct == vl:
-                                    break
+                            if ct >= vl - 4 and not cpinfo_flag:
+                                ActionChains(browser).move_to_element(we).perform()
+                                ActionChains(browser).context_click(we).perform()
+                                try:
+                                    vinfo = browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
+                                    vinfo.click()
+                                    cpinfo_flag = True
+                                except Exception:
+                                    pass
+                            if isEnded or ct == vl:
+                                break
+                            time.sleep(0.5)
                     except Exception as e:
                         log.error(e)
-                        pass
+                        time.sleep(0.5)
+                        pass    
                     # sleep(1)
                 playinfo = browser.execute_script("return window.__playinfo__")
                 todaytime = time.strftime("%Y-%m-%d", time.localtime(time.time()))
@@ -178,15 +213,16 @@ class ChromeDriver:
                     file.write('\n')
                     file.close()
                 #播放结束，保存播放日志
-                cpinfo=browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[1]/div[1]/div[15]/div[3]/div/span[2]')
-                cpinfo.click()
-                data = pyperclip.paste()
-                filepath=os.path.abspath('.')
-                source_info_file = 'playInfo_log_'+todaytime + '.txt'
-                file = open(filepath+'\\'+source_info_file, 'a+', encoding='utf-8')
-                # str = '\n'.join(n for n in infolist)
-                file.write(data)
-                file.close()
+                if cpinfo_flag:
+                    cpinfo=browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[1]/div[1]/div[15]/div[3]/div/span[2]')
+                    cpinfo.click()
+                    data = pyperclip.paste()
+                    filepath=os.path.abspath('.')
+                    source_info_file = 'playInfo_log_'+todaytime + '.txt'
+                    file = open(filepath+'\\'+source_info_file, 'a+', encoding='utf-8')
+                    # str = '\n'.join(n for n in infolist)
+                    file.write(data)
+                    file.close()
                 if len(playinfo) > 1:
                     filepath=os.path.abspath('.')
                     todaytime = time.strftime("%Y-%m-%d", time.localtime(time.time()))

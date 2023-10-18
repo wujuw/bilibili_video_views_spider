@@ -1,4 +1,5 @@
 play_list: # 视频播放列表
+    # - https://www.bilibili.com/video/BV1e84116735
     - https://www.bilibili.com/video/BV1rw411A7A6 # 动画 31s
     - https://www.bilibili.com/video/BV1ju4y1p7Us # 鬼畜 27s
     - https://www.bilibili.com/video/BV1Z8411v7yW # 舞蹈 36s
@@ -20,7 +21,7 @@ play_list: # 视频播放列表
     - https://www.bilibili.com/video/BV1zB4y1Z7Sv # 游戏 33s
     - https://www.bilibili.com/video/BV1Tz4y1V7or # 动画 37s
 
-net_interface: WLAN # 抓包网络接口
+net_interface: 以太网 # 抓包网络接口
 
 play_resolutions: # 目前还不能配置
     # - 1080p
