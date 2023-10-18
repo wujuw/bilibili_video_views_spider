@@ -25,6 +25,14 @@ login_cookie = {
     "Secure": False
 }
 
+resolution_qn = {
+    'auto': 0,
+    '360p': 16,
+    '480p': 32,
+    '720p': 64,
+    '1080p': 80,
+}
+
 class ChromeDriver:
     # global infolist=[]
     def __init__(self, head_less=False):
@@ -101,11 +109,8 @@ class ChromeDriver:
                                 petime = time.time()#播放开始时间
                                 print('播放开始')
                                 startDelay = petime-pstime
-                                #抓取播放器日志开始
-                                # rl =  self.get_resolution(we,browser,startflag)
                                 startflag =1 
-                                # browser.execute_script("player.setAutoplay(false))")
-                                #抓取播放器日志结束
+                                browser.execute_async_script('player.requestQuality(%s)' % resolution_qn[play_resolution])
                             else: 
                                 time.sleep(0.1)
                         elif  startflag ==1:
