@@ -153,7 +153,7 @@ class ChromeDriver:
                 if len(infolist) > 1:
                     filepath=os.path.abspath('.')                    
                     log_file = 'log_'+todaytime + '.txt'
-                    file = open(filepath+'\\'+log_file, 'a+', encoding='utf-8')
+                    file = open(filepath+'\\'+log_file, 'w', encoding='utf-8')
                     str = '\n'.join(n for n in infolist)
                     file.write(str)
                     file.write('\n')
@@ -167,7 +167,7 @@ class ChromeDriver:
                 if len(data) > 1:
                     filepath=os.path.abspath('.')
                     play_info_file = 'playInfo_log_'+todaytime + '.txt'
-                    file = open(filepath+'\\'+play_info_file, 'a+', encoding='utf-8')
+                    file = open(filepath+'\\'+play_info_file, 'w', encoding='utf-8')
                     # str = '\n'.join(n for n in infolist)
                     file.write(data)
                     file.close()
@@ -175,7 +175,7 @@ class ChromeDriver:
                     filepath=os.path.abspath('.')
                     todaytime = time.strftime("%Y-%m-%d", time.localtime(time.time()))
                     source_info_file = 'playinfo_'+todaytime + '.txt'
-                    file = open(filepath+'\\'+source_info_file, 'a+', encoding='utf-8')
+                    file = open(filepath+'\\'+source_info_file, 'w', encoding='utf-8')
                     # str = '\n'.join(n for n in playinfo.data)
                     # file.write(str)
                     str = json.dumps(playinfo, indent=4)
@@ -226,7 +226,7 @@ def moveOutputFiles(pcap_name, log_file, source_info_file, play_info_file, ip, p
     # 移动文件到指定目录
     folder = 'output/' + play_resolution
     if not os.path.exists(folder):
-        os.mkdir(folder)
+        os.makedirs(folder)
     vid = ip.split('/')[-1]
     folder = os.path.join(folder, vid)
     if not os.path.exists(folder):
