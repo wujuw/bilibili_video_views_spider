@@ -196,13 +196,13 @@ class ChromeDriver:
             capture_proc, pcap_path = capturePcap(net_interface)
             log_file, source_info_file, play_info_file = self.play(ip, play_resolution)
             stopCapture(capture_proc)
-            moveOutputFiles(pcap_path, log_file, source_info_file, play_info_file, ip)
+            moveOutputFiles(pcap_path, log_file, source_info_file, play_info_file, ip, play_resolution)
 
     def play_loop(self, ip_list):
         while True:
             self.play_list(ip_list)
 
-def moveOutputFiles(pcap_name, log_file, source_info_file, play_info_file, ip):
+def moveOutputFiles(pcap_name, log_file, source_info_file, play_info_file, ip, play_resolution):
     """
     :param pcap_path: pcap文件路径
     :param log_file: 日志文件路径
@@ -224,7 +224,7 @@ def moveOutputFiles(pcap_name, log_file, source_info_file, play_info_file, ip):
         return
 
     # 移动文件到指定目录
-    folder = 'output'
+    folder = 'output/' + play_resolution
     if not os.path.exists(folder):
         os.mkdir(folder)
     vid = ip.split('/')[-1]
