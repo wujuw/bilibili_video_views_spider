@@ -20,17 +20,31 @@ login_cookie = {
     "value": "7cdb20b5,1709952538,2139a*91",
     "domain": ".bilibili.com",
     "path": "/",
-    "httpOnly": False,
+    "httpOnly": True,
     "HostOnly": False,
-    "Secure": False
+    "Secure": True
+}
+
+quality_cookie = {
+    "name": "CURRENT_QUALITY",
+    "value": "80",
+    "domain": ".bilibili.com",
+    "path": "/",
+}
+
+userID_cookie = {
+    "name": "DedeUserID",
+    "value": "3493121159596040",
+    "domain": ".bilibili.com",
+    "path": "/",
 }
 
 resolution_qn = {
-    'auto': 0,
-    '360p': 16,
-    '480p': 32,
-    '720p': 64,
-    '1080p': 80,
+    'auto': '0',
+    '360p': '16',
+    '480p': '32',
+    '720p': '64',
+    '1080p': '80',
 }
 
 class ChromeDriver:
@@ -72,12 +86,16 @@ class ChromeDriver:
                     EC.visibility_of_element_located((By.CLASS_NAME, 'bili-header__bar'))
                 )
                 browser.add_cookie(login_cookie)
+                quality_cookie['value'] = resolution_qn[play_resolution]
+                browser.add_cookie(quality_cookie)
+                browser.add_cookie(userID_cookie)
                 # browser.get("https://www.bilibili.com/")
                 browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_type', '2')")
                 browser.execute_script("localStorage.setItem('bilibili_player_codec_prefer_reset', '1.5.2')") # 1.5.2 可能后续会变化
                 # recommend_auto_play
                 browser.execute_script("localStorage.setItem('recommend_auto_play', 'close')")
-                
+            
+
                 browser.get(ip)
                 print("播放地址: ",ip)
                 title="url\t启播时延\t时间\t当前播放时长\t视频时长\t清晰度\t播放倍速"
@@ -110,7 +128,7 @@ class ChromeDriver:
                                 print('播放开始')
                                 startDelay = petime-pstime
                                 startflag =1 
-                                browser.execute_script('player.requestQuality(%s)' % resolution_qn[play_resolution])
+                                # browser.execute_script('player.requestQuality(%s)' % resolution_qn[play_resolution])
                             else: 
                                 time.sleep(0.1)
                         elif  startflag ==1:
