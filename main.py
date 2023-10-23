@@ -1,5 +1,5 @@
 from chrome_driver import ChromeDriver
-import paramiko
+# import paramiko
 import yaml
 
 configure_file = 'config.yaml'

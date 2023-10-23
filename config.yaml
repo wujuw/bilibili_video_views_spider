@@ -23,12 +23,12 @@ play_list: # 视频播放列表
 
 net_interface: 以太网 # 抓包网络接口
 
-play_resolutions: 
+play_resolutions: # 每次运行插件会用下列配置的的每种分辨率分布采集一轮上面的全部视频
     - 1080p
     - 720p
     - 480p
-    - 360p
-    - auto
+    # - 360p # 取消注释即可采集一轮对应分辨率的视频
+    # - auto # B站自动调节分辨率
 
 # ssh_host: 192.168.31.244
 # ssh_port: 22
