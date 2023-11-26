@@ -8,6 +8,7 @@ with open(configure_file, 'r', encoding='utf-8') as f:
     play_list = config['play_list']
     net_interface = config['net_interface']
     play_resolutions = config['play_resolutions']
+    fullscreen_play = config['fullscreen_play']
     # net_cond_list = config['net_cond_list']
     # ssh_host = config['ssh_host']
     # ssh_port = config['ssh_port']
@@ -31,4 +32,4 @@ with open(configure_file, 'r', encoding='utf-8') as f:
 #     ssh_client.exec_command('tc class add dev {} parent 1: classid 1:1 htb rate {}kbit'.format(net_interface, net_cond['rate']))
 
 for play_resolution in play_resolutions:
-    ChromeDriver().play_list(play_list, net_interface=net_interface, play_resolution=play_resolution)
+    ChromeDriver().play_list(play_list, net_interface=net_interface, play_resolution=play_resolution, fullscreen_play=fullscreen_play)

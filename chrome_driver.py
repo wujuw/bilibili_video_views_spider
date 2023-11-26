@@ -206,13 +206,13 @@ class ChromeDriver:
             log.error(e)
         return log_file,source_info_file,play_info_file
 
-    def play_list(self, ip_list, net_interface, play_resolution):
+    def play_list(self, ip_list, net_interface, play_resolution, fullscreen_play):
         for ip in ip_list:
             # 关掉现有的tshark进程
             subprocess.call('taskkill /F /IM tshark.exe', shell=True, stderr=subprocess.DEVNULL)
             # 播放前开始抓包
             capture_proc, pcap_path = capturePcap(net_interface)
-            log_file, source_info_file, play_info_file = self.play(ip, play_resolution)
+            log_file, source_info_file, play_info_file = self.play(ip, play_resolution, fullscreen_play)
             stopCapture(capture_proc)
             moveOutputFiles(pcap_path, log_file, source_info_file, play_info_file, ip, play_resolution)
 
