@@ -27,10 +27,10 @@ play_resolutions: # 每次运行插件会用下列配置的的每种分辨率分
 # 是否全屏播放
 fullscreen_play: false
 
-# ssh_host: 192.168.31.244
-# ssh_port: 22
-# ssh_username: root
-# ssh_password: password
+ssh_host: 192.168.31.244
+ssh_port: 22
+ssh_username: root
+ssh_password: password
 
 # net_cond_list:
 
