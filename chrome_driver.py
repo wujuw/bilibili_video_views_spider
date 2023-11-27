@@ -65,7 +65,7 @@ class ChromeDriver:
         video_width = media_info['videoWidth']
         return str(video_width) + 'x' + str(video_height)
         
-    def play(self, ip, play_resolution, proxy=None):
+    def play(self, ip, play_resolution, fullscreen_play, proxy=None):
         """
         :param proxy: 代理
         :param ip: 播放地址
@@ -128,6 +128,10 @@ class ChromeDriver:
                                 print('播放开始')
                                 startDelay = petime-pstime
                                 startflag =1 
+                                browser.execute_script("return player.danmaku.close()") 
+                                # 全屏播放
+                                if fullscreen_play:
+                                    browser.execute_script("return player.mediaElement().requestFullscreen()")
                                 # browser.execute_script('player.requestQuality(%s)' % resolution_qn[play_resolution])
                             else: 
                                 time.sleep(0.1)
