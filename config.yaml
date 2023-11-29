@@ -27,11 +27,25 @@ play_resolutions: # 每次运行插件会用下列配置的的每种分辨率分
 # 是否全屏播放
 fullscreen_play: false
 
-ssh_host: 192.168.31.244
+ssh_host: 192.168.31.1
 ssh_port: 22
 ssh_username: root
-ssh_password: password
+ssh_password: 4bcc8d55
 
-# net_cond_list:
+device_ip: 192.168.31.56 # 设备IP
+
+router_lan_interface: br-lan # 内网网卡上做限速，限制的是下载速度
+
+net_cond_list:
+    - rate: 1000000 # 1Mbps
+    - rate: 2000000 # 2Mbps
+    - rate: 3000000 # 3Mbps
+    - rate: 4000000 # 4Mbps
+    - rate: 5000000 # 5Mbps
+    - rate: 6000000 # 6Mbps
+    - rate: 7000000 # 7Mbps
+    - rate: 8000000 # 8Mbps
+    - rate: 9000000 # 9Mbps
+    - rate: 10000000 # 10Mbps
 
 
