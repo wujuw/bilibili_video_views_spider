@@ -49,7 +49,7 @@ for net_cond in net_cond_list:
     for play_resolution in play_resolutions:
         for ip in play_list:
             net_cond_reset()
-            net_cond_configure(net_cond)
+            net_cond_configure_thread(net_cond)
             ChromeDriver().play_one(ip, net_interface=net_interface, play_resolution=play_resolution, fullscreen_play=fullscreen_play)
     # move ouput dir to collection/net_cond
     net_cond_str = f'rate_{net_cond["rate"]}Kbit'
