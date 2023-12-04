@@ -37,15 +37,37 @@ device_ip: 192.168.31.56 # 设备IP
 router_lan_interface: br-lan # 内网网卡上做限速，限制的是下载速度
 
 net_cond_list: # rate 单位Kbit
-    # - rate: 1000 # 1Mbps
-    # - rate: 2000 # 2Mbps
+    - 
+        rate: 1000 # 1Mbps
+        duration: 10 # 60s
+        start_time: 0 # 0s
+    - 
+        rate: 1000 # 1Mbps
+        duration: 10 # 60s
+        start_time: 10 # 10s
+    -
+        rate: 1000 # 1Mbps
+        duration: 10 # 60s
+        start_time: 20 # 20s
+    -
+        rate: 1000 # 1Mbps
+        duration: 10 # 60s
+        start_time: 30 # 30s
+    -
+        rate: 1000 # 1Mbps
+        duration: 10 # 60s
+        start_time: 40 # 40s
+    -
+        rate: 1000 # 1Mbps
+        duration: 10 # 60s
+        start_time: 50 # 50s
     # - rate: 3000 # 3Mbps
-    - rate: 4000 # 4Mbps
-    - rate: 5000 # 5Mbps
-    - rate: 6000 # 6Mbps
-    - rate: 7000 # 7Mbps
-    - rate: 8000 # 8Mbps
-    - rate: 9000 # 9Mbps
-    - rate: 10000 # 10Mbps
+    # - rate: 4000 # 4Mbps
+    # - rate: 5000 # 5Mbps
+    # - rate: 6000 # 6Mbps
+    # - rate: 7000 # 7Mbps
+    # - rate: 8000 # 8Mbps
+    # - rate: 9000 # 9Mbps
+    # - rate: 10000 # 10Mbps
 
 
