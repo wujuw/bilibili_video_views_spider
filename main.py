@@ -1,3 +1,4 @@
+import random
 import time
 from chrome_driver import ChromeDriver
 import paramiko
@@ -24,19 +25,37 @@ ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh_client.connect(ssh_host, ssh_port, ssh_username, ssh_password)
 
+stop_flag = False
 
-def net_cond_configure(net_cond):
-    rate = net_cond['rate']
-    duration = net_cond['duration']
+def set_rate(rate):
+    net_cond_reset()
     ssh_client.exec_command(f'tc qdisc add dev {router_lan_interface} root handle 1: htb default 1')
     ssh_client.exec_command(f'tc class add dev {router_lan_interface} parent 1: classid 1:1 htb rate 10MBps')
     ssh_client.exec_command(f'tc class add dev {router_lan_interface} parent 1: classid 1:2 htb rate {rate}Kbit')
     ssh_client.exec_command(f'tc filter add dev {router_lan_interface} protocol ip parent 1:0 prio 1 u32 match ip dst {device_ip} flowid 1:2')
-    time.sleep(duration)
-    ssh_client.exec_command(f'tc qdisc del root dev {router_lan_interface}')
+
+def net_cond_random_bw_configure(net_cond):
+    max_rate = net_cond['max_rate']
+    min_rate = net_cond['min_rate']
+    change_interval = net_cond['change_interval']
+    rate = random.randint(min_rate, max_rate)
+    set_rate(rate)
+    start_time = time.time()
+    while not stop_flag:
+        now_time = time.time()
+        if now_time - start_time >= change_interval:
+            start_time = now_time
+            rate = random.randint(min_rate, max_rate)
+            set_rate(rate)
+        time.sleep(1)
+
+
+def net_cond_configure(net_cond):
+    if net_cond['type'] == 'random_bandwidth':
+        net_cond_random_bw_configure(net_cond)
     
 def net_cond_configure_thread(net_cond):
-    threading.Timer(net_cond['start_time'], net_cond_configure, args=(net_cond,)).start()
+    return threading.Thread(target=net_cond_configure, args=(net_cond,))
 
 def net_cond_reset():
     cmd = f'tc qdisc del root dev {router_lan_interface}'
@@ -49,9 +68,13 @@ for net_cond in net_cond_list:
     for play_resolution in play_resolutions:
         for ip in play_list:
             net_cond_reset()
-            net_cond_configure(net_cond)
+            t = net_cond_configure_thread(net_cond)
+            stop_flag = False
+            t.start()
             ChromeDriver().play_one(ip, net_interface=net_interface, play_resolution=play_resolution, fullscreen_play=fullscreen_play)
+            stop_flag = True
+            t.join()
     # move ouput dir to collection/net_cond
-    net_cond_str = f'rate_{net_cond["rate"]}Kbit'
+    net_cond_str = f'type_{net_cond["type"]}'
     os.rename('output', f'collection/{net_cond_str}')
 net_cond_reset()
