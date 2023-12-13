@@ -40,10 +40,10 @@ router_lan_interface: br-lan # 内网网卡上做限速，限制的是下载速�
 net_cond_list: # rate 单位Kbit
     - 
         type: random_bandwidth
-        max_rate: 10000 # 10Mbps
-        min_rate: 100 # 100Kbps
+        max_rate: 6000 # 5000Kbps
+        min_rate: 600 # 100Kbps
         change_interval: 5 # 5s
-    -
+    # -
         # type: predefined
         # bandwidth_list: 
         #     - 
