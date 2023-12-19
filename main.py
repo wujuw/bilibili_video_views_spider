@@ -26,6 +26,7 @@ ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh_client.connect(ssh_host, ssh_port, ssh_username, ssh_password)
 
 stop_flag = False
+net_log_name = 'net_cond.log'
 
 def set_rate(rate):
     net_cond_reset()
@@ -38,16 +39,20 @@ def net_cond_random_bw_configure(net_cond):
     max_rate = net_cond['max_rate']
     min_rate = net_cond['min_rate']
     change_interval = net_cond['change_interval']
+    net_log = open(net_log_name, 'w')
     rate = random.randint(min_rate, max_rate)
     set_rate(rate)
     start_time = time.time()
+    net_log.write(f'{start_time}, {rate}Kbps\n')
     while not stop_flag:
         now_time = time.time()
         if now_time - start_time >= change_interval:
             start_time = now_time
             rate = random.randint(min_rate, max_rate)
             set_rate(rate)
+            net_log.write(f'{start_time}, {rate}Kbps\n')
         time.sleep(1)
+    net_log.close()
 
 
 def net_cond_configure(net_cond):
@@ -67,13 +72,21 @@ if not os.path.exists('collection'):
 for net_cond in net_cond_list:
     for play_resolution in play_resolutions:
         for ip in play_list:
-            net_cond_reset()
-            t = net_cond_configure_thread(net_cond)
-            stop_flag = False
-            t.start()
-            ChromeDriver().play_one(ip, net_interface=net_interface, play_resolution=play_resolution, fullscreen_play=fullscreen_play)
-            stop_flag = True
-            t.join()
+            for i in range(100):
+                net_cond_reset()
+                t = net_cond_configure_thread(net_cond,)
+                stop_flag = False
+                t.start()
+                ChromeDriver().play_one(ip, net_interface=net_interface, play_resolution=play_resolution, fullscreen_play=fullscreen_play)
+                stop_flag = True
+                t.join()
+                video_id = ip.split('/')[-1]
+                if os.path.exists(f'output/{play_resolution}/{video_id}'):
+                    if os.path.exists(net_log_name):
+                        os.rename(net_log_name, f'output/{play_resolution}/{video_id}/{net_log_name}')
+                    os.rename(f'output/{play_resolution}/{video_id}', f'output/{play_resolution}/{video_id}_{i+1}')
+                if os.path.exists(net_log_name):
+                    os.remove(net_log_name)
     # move ouput dir to collection/net_cond
     net_cond_str = f'type_{net_cond["type"]}'
     os.rename('output', f'collection/{net_cond_str}')
