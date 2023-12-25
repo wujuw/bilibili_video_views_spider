@@ -72,12 +72,12 @@ if not os.path.exists('collection'):
 for net_cond in net_cond_list:
     for play_resolution in play_resolutions:
         for ip in play_list:
-            for i in range(100):
+            for i in range(0, 10):
                 net_cond_reset()
                 t = net_cond_configure_thread(net_cond,)
                 stop_flag = False
                 t.start()
-                ChromeDriver().play_one(ip, net_interface=net_interface, play_resolution=play_resolution, fullscreen_play=fullscreen_play)
+                ChromeDriver(head_less=True).play_one(ip, net_interface=net_interface, play_resolution=play_resolution, fullscreen_play=fullscreen_play)
                 stop_flag = True
                 t.join()
                 video_id = ip.split('/')[-1]

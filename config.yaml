@@ -1,6 +1,6 @@
 play_list: # 视频播放列表
     - https://www.bilibili.com/video/BV1WH4y127qe # 动画
-    # - https://www.bilibili.com/video/BV1ga4y1U7FP # 动画 59s
+    - https://www.bilibili.com/video/BV1ga4y1U7FP # 动画 59s
     # - https://www.bilibili.com/video/BV1Tb4y1u7Z8 # 舞蹈
     # - https://www.bilibili.com/video/BV1Sc41167Ru # 娱乐
     # - https://www.bilibili.com/video/BV1dv411c7Tu
