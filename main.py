@@ -69,10 +69,13 @@ def net_cond_reset():
 if not os.path.exists('collection'):
     os.mkdir('collection')
 
+
+# play_list乱序
+random.shuffle(play_list)
 for net_cond in net_cond_list:
     for play_resolution in play_resolutions:
         for ip in play_list:
-            for i in range(0, 10):
+            for i in range(0, 20):
                 net_cond_reset()
                 t = net_cond_configure_thread(net_cond,)
                 stop_flag = False

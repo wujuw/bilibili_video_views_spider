@@ -170,6 +170,8 @@ class ChromeDriver:
                         time.sleep(0.5)
                         pass    
                     # sleep(1)
+                    if time.time() - pstime > 600:
+                        return None, None, None
                 playinfo = browser.execute_script("return window.__playinfo__")
                 todaytime = time.strftime("%Y-%m-%d", time.localtime(time.time()))
                 if len(infolist) > 1:

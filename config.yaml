@@ -1,19 +1,19 @@
 play_list: # 视频播放列表
     - https://www.bilibili.com/video/BV1WH4y127qe # 动画
     - https://www.bilibili.com/video/BV1ga4y1U7FP # 动画 59s
-    # - https://www.bilibili.com/video/BV1Tb4y1u7Z8 # 舞蹈
-    # - https://www.bilibili.com/video/BV1Sc41167Ru # 娱乐
-    # - https://www.bilibili.com/video/BV1dv411c7Tu
-    # - https://www.bilibili.com/video/BV1Eu4y1P78t
-    # - https://www.bilibili.com/video/BV1qC4y117bN
-    # - https://www.bilibili.com/video/BV1F94y1H7z4
-    # - https://www.bilibili.com/video/BV1EG411D7NS
-    # - https://www.bilibili.com/video/BV1gC4y1S7Rd
-    # - https://www.bilibili.com/video/BV1ib4y1u7cc
-    # - https://www.bilibili.com/video/BV1Ka4y1U7HV
-    # - https://www.bilibili.com/video/BV1JG411D7VF
-    # - https://www.bilibili.com/video/BV1iG411D7jT
-    # - https://www.bilibili.com/video/BV1Uw411P7m4
+    - https://www.bilibili.com/video/BV1Tb4y1u7Z8 # 舞蹈
+    - https://www.bilibili.com/video/BV1Sc41167Ru # 娱乐
+    - https://www.bilibili.com/video/BV1dv411c7Tu
+    - https://www.bilibili.com/video/BV1Eu4y1P78t
+    - https://www.bilibili.com/video/BV1qC4y117bN
+    - https://www.bilibili.com/video/BV1F94y1H7z4
+    - https://www.bilibili.com/video/BV1EG411D7NS
+    - https://www.bilibili.com/video/BV1gC4y1S7Rd
+    - https://www.bilibili.com/video/BV1ib4y1u7cc
+    - https://www.bilibili.com/video/BV1Ka4y1U7HV
+    - https://www.bilibili.com/video/BV1JG411D7VF
+    - https://www.bilibili.com/video/BV1iG411D7jT
+    - https://www.bilibili.com/video/BV1Uw411P7m4
 
 net_interface: 以太网 # 抓包网络接口
 
