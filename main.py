@@ -25,8 +25,10 @@ ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh_client.connect(ssh_host, ssh_port, ssh_username, ssh_password)
 
-stop_flag = False
+single_stop_flag = False
 net_log_name = 'net_cond.log'
+main_stop_flag = False
+
 
 def set_rate(rate):
     net_cond_reset()
@@ -44,7 +46,7 @@ def net_cond_random_bw_configure(net_cond):
     set_rate(rate)
     start_time = time.time()
     net_log.write(f'{start_time}, {rate}Kbps\n')
-    while not stop_flag:
+    while not single_stop_flag:
         now_time = time.time()
         if now_time - start_time >= change_interval:
             start_time = now_time
@@ -65,10 +67,20 @@ def net_cond_configure_thread(net_cond):
 def net_cond_reset():
     cmd = f'tc qdisc del root dev {router_lan_interface}'
     ssh_client.exec_command(cmd)
+
+# send heartbeat to maintain the ssh connection
+def send_heartbeat():
+    while not main_stop_flag:
+        ssh_client.exec_command('echo 1')
+        time.sleep(60)
     
 if not os.path.exists('collection'):
     os.mkdir('collection')
 
+
+# start the heartbeat thread
+heartbeat_t = threading.Thread(target=send_heartbeat)
+heartbeat_t.start()
 
 # play_list乱序
 random.shuffle(play_list)
@@ -78,10 +90,10 @@ for net_cond in net_cond_list:
             for i in range(0, 20):
                 net_cond_reset()
                 t = net_cond_configure_thread(net_cond,)
-                stop_flag = False
+                single_stop_flag = False
                 t.start()
                 ChromeDriver(head_less=True).play_one(ip, net_interface=net_interface, play_resolution=play_resolution, fullscreen_play=fullscreen_play)
-                stop_flag = True
+                single_stop_flag = True
                 t.join()
                 video_id = ip.split('/')[-1]
                 if os.path.exists(f'output/{play_resolution}/{video_id}'):
@@ -94,3 +106,6 @@ for net_cond in net_cond_list:
     net_cond_str = f'type_{net_cond["type"]}'
     os.rename('output', f'collection/{net_cond_str}')
 net_cond_reset()
+
+main_stop_flag = True
+heartbeat_t.join()
