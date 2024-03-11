@@ -21,6 +21,14 @@ with open(configure_file, 'r', encoding='utf-8') as f:
     ssh_username = config['ssh_username']
     ssh_password = config['ssh_password']
 
+need_unpack_net_conds = [net_cond for net_cond in net_cond_list if net_cond['need_unpack']]
+net_cond_list = [net_cond for net_cond in net_cond_list if not net_cond['need_unpack']]
+for net_cond in need_unpack_net_conds:
+    if net_cond['type'] == 'constant_bandwidth':
+        rates = net_cond['rates']
+        for rate in rates:
+            net_cond_list.append({'type': 'constant_bandwidth', 'rate': rate})
+
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh_client.connect(ssh_host, ssh_port, ssh_username, ssh_password)
@@ -56,10 +64,52 @@ def net_cond_random_bw_configure(net_cond):
         time.sleep(1)
     net_log.close()
 
+def net_cond_constant_bw_configure(net_cond):
+    rate = net_cond['rate']
+    set_rate(rate)
+    net_log = open(net_log_name, 'w')
+    net_log.write(f'{time.time()}, {rate}Kbps\n')
+    net_log.close()
+
+def net_cond_trace_bw_configure(net_cond):
+    trace = net_cond['trace']
+    net_log = open(net_log_name, 'w')
+    i = 0
+    rate, duration = trace[i]
+    i += 1
+    set_rate(rate)
+    net_log.write(f'{time.time()}, {rate}Kbps\n')
+    start_time = time.time()
+    while not single_stop_flag:
+        now_time = time.time()
+        if now_time - start_time >= duration:
+            if i < len(trace):
+                rate, duration = trace[i]
+                i += 1
+                set_rate(rate)
+                net_log.write(f'{now_time}, {rate}Kbps\n')
+                start_time = now_time
+            else:
+                break
+        time.sleep(1)
+    net_log.close()
+
 
 def net_cond_configure(net_cond):
     if net_cond['type'] == 'random_bandwidth':
         net_cond_random_bw_configure(net_cond)
+    elif net_cond['type'] == 'constant_bandwidth':
+        net_cond_constant_bw_configure(net_cond)
+    elif net_cond['type'] == 'trace_bandwidth':
+        net_cond_trace_bw_configure(net_cond)
+
+def net_cond_to_str(net_cond):
+    if net_cond['type'] == 'random_bandwidth':
+        return f'random_{net_cond["min_rate"]}KBps_{net_cond["max_rate"]}KBps_{net_cond["change_interval"]}s'
+    elif net_cond['type'] == 'constant_bandwidth':
+        return f'constant_bandwidth_{net_cond["rate"]}KBps'
+    elif net_cond['type'] == 'trace_bandwidth':
+        return f'trace_{net_cond["id"]}'
     
 def net_cond_configure_thread(net_cond):
     return threading.Thread(target=net_cond_configure, args=(net_cond,))
@@ -87,7 +137,7 @@ random.shuffle(play_list)
 for net_cond in net_cond_list:
     for play_resolution in play_resolutions:
         for ip in play_list:
-            for i in range(0, 20):
+            for i in range(0, 4):
                 net_cond_reset()
                 t = net_cond_configure_thread(net_cond,)
                 single_stop_flag = False
@@ -106,7 +156,7 @@ for net_cond in net_cond_list:
                 if os.path.exists(net_log_name):
                     os.remove(net_log_name)
     # move ouput dir to collection/net_cond
-    net_cond_str = f'type_{net_cond["type"]}'
+    net_cond_str = net_cond_to_str(net_cond)
     os.rename('output', f'collection/{net_cond_str}')
 net_cond_reset()
 

@@ -39,20 +39,18 @@ router_lan_interface: br-lan # 内网网卡上做限速，限制的是下载速�
 
 net_cond_list: # rate 单位Kbit
     - 
-        type: random_bandwidth
+        type: random_bandwidth # 跑三遍，900个样本
         max_rate: 6000 # 5000Kbps
         min_rate: 600 # 100Kbps
         change_interval: 3 # 5s
-    # -
-        # type: predefined
-        # bandwidth_list: 
-        #     - 
-        #         rate: 10000
-        #         duration: 5
-        #     - 
-        #         rate: 100
-        #         duration: 5
-        #     - 
-        #         rate: 10000
-        #         duration: 50
+    -
+        need_unpack: true # 由程序将该配置解包成多个配置，rates中每个rate转为一个配置
+        type: constant_bandwidth # 3900个样本
+        rates: [300, 500, 800,
+                1000, 2000, 3000, 4000, 5000, 8000, 10000, 
+                20000, 50000, 100000]
+    -
+        type: trace_bandwidth # 维持在一个速率（Kbps）持续一段时间（s）
+        trace: [[100000, 10], [10000, 10], [100000, 1]]
+        id: 1
 
