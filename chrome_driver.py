@@ -65,7 +65,7 @@ class ChromeDriver:
         video_width = media_info['videoWidth']
         return str(video_width) + 'x' + str(video_height)
         
-    def play(self, ip, play_resolution, fullscreen_play, proxy=None):
+    def play(self, ip, play_resolution, fullscreen_play, timeout=None, proxy=None):
         """
         :param proxy: 代理
         :param ip: 播放地址
@@ -112,6 +112,10 @@ class ChromeDriver:
                 cpinfo_flag = False
                 # we=browser.find_element(By.ID,'bilibili-player')
                 while True:
+                    cur_time = time.time()
+                    if timeout and cur_time - pstime > timeout:
+                        raise TimeoutError(f'play {ip} timeout, timeout={timeout}s')
+
                     try:
                         # 移动鼠标
                         # ActionChains(browser).move_to_element(we).perform()# 鼠标悬停                    
@@ -139,13 +143,8 @@ class ChromeDriver:
                             rl =  self.get_resolution(browser)
                             #抓取播放器日志结束
                             tm=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            # ActionChains(browser).move_to_element(we).perform()# 鼠标悬停 
-                            # ct=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-time-current').text
                             ct = browser.execute_script("return player.getCurrentTime()")
-                            #print("当前播放时长: ",ct)     #当前播放时长
-                            # vl=browser.find_element(By.CLASS_NAME,'bpx-player-ctrl-time-duration').text
                             vl = browser.execute_script("return player.getDuration()")
-                            # ceil
                             ct = math.ceil(ct)
                             vl = math.ceil(vl)
                             isEnded = browser.execute_script("return player.isEnded()")
@@ -153,15 +152,6 @@ class ChromeDriver:
                             rowData="%s\t%s\t%s\t%s\t%s\t%s\t%s"%(ip,startDelay,tm,ct,vl,rl,ps,)
                             print(rowData)
                             infolist.append(rowData)
-                            # if ct >= vl - 4 and not cpinfo_flag:
-                            #     ActionChains(browser).move_to_element(we).perform()
-                            #     ActionChains(browser).context_click(we).perform()
-                            #     try:
-                            #         vinfo = browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[4]/ul/li[6]')
-                            #         vinfo.click()
-                            #         cpinfo_flag = True
-                            #     except Exception:
-                            #         pass
                             if isEnded or ct == vl:
                                 break
                             time.sleep(0.5)
@@ -182,11 +172,6 @@ class ChromeDriver:
                     file.write(str)
                     file.write('\n')
                     file.close()
-                #播放结束，保存播放日志
-                # if cpinfo_flag:
-                # cpinfo=browser.find_element(By.XPATH,'//*[@id="bilibili-player"]/div/div/div[1]/div[1]/div[15]/div[3]/div/span[2]')
-                # cpinfo.click()
-                # data = pyperclip.paste()
                 data = browser.execute_script("return player.getFormattedLogs(0)")
                 if len(data) > 1:
                     filepath=os.path.abspath('.')
@@ -200,8 +185,6 @@ class ChromeDriver:
                     todaytime = time.strftime("%Y-%m-%d", time.localtime(time.time()))
                     source_info_file = 'playinfo_'+todaytime + '.txt'
                     file = open(filepath+'\\'+source_info_file, 'w', encoding='utf-8')
-                    # str = '\n'.join(n for n in playinfo.data)
-                    # file.write(str)
                     str = json.dumps(playinfo, indent=4)
                     file.write(str)
                     file.write('\n')
@@ -212,12 +195,12 @@ class ChromeDriver:
             log.error(e)
         return log_file,source_info_file,play_info_file
 
-    def play_one(self, ip, net_interface, play_resolution, fullscreen_play):
+    def play_one(self, ip, net_interface, play_resolution, fullscreen_play, timeout=None):
         # 关掉现有的tshark进程
         subprocess.call('taskkill /F /IM tshark.exe', shell=True, stderr=subprocess.DEVNULL)
         # 播放前开始抓包
         capture_proc, pcap_path = capturePcap(net_interface)
-        log_file, source_info_file, play_info_file = self.play(ip, play_resolution, fullscreen_play)
+        log_file, source_info_file, play_info_file = self.play(ip, play_resolution, fullscreen_play, timeout)
         stopCapture(capture_proc)
         moveOutputFiles(pcap_path, log_file, source_info_file, play_info_file, ip, play_resolution)
 

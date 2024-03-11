@@ -92,7 +92,10 @@ for net_cond in net_cond_list:
                 t = net_cond_configure_thread(net_cond,)
                 single_stop_flag = False
                 t.start()
-                ChromeDriver(head_less=True).play_one(ip, net_interface=net_interface, play_resolution=play_resolution, fullscreen_play=fullscreen_play)
+                ChromeDriver(head_less=True).play_one(ip, net_interface=net_interface, 
+                                                      play_resolution=play_resolution, 
+                                                      fullscreen_play=fullscreen_play,
+                                                      timeout=60*5)
                 single_stop_flag = True
                 t.join()
                 video_id = ip.split('/')[-1]
