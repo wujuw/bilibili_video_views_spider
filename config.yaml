@@ -43,14 +43,15 @@ net_cond_list: # rate 单位Kbit
         max_rate: 6000 # 5000Kbps
         min_rate: 600 # 100Kbps
         change_interval: 3 # 5s
+        need_unpack: False
     -
         need_unpack: true # 由程序将该配置解包成多个配置，rates中每个rate转为一个配置
         type: constant_bandwidth # 3900个样本
-        rates: [300, 500, 800,
-                1000, 2000, 3000, 4000, 5000, 8000, 10000, 
-                20000, 50000, 100000]
-    -
-        type: trace_bandwidth # 维持在一个速率（Kbps）持续一段时间（s）
-        trace: [[100000, 10], [10000, 10], [100000, 1]]
-        id: 1
+        rates: [  1000, 2000]
+                # 1000, 2000, 3000, 4000, 5000, 8000, 10000, 
+                # 20000, 50000, 100000]
+    # -
+    #     type: trace_bandwidth # 维持在一个速率（Kbps）持续一段时间（s）
+    #     trace: [[100000, 10], [10000, 10], [100000, 1]]
+    #     id: 1
 

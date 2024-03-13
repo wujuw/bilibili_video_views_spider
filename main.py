@@ -32,18 +32,31 @@ for net_cond in need_unpack_net_conds:
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh_client.connect(ssh_host, ssh_port, ssh_username, ssh_password)
+transport = ssh_client.get_transport()
+transport.set_keepalive(60)
 
 single_stop_flag = False
 net_log_name = 'net_cond.log'
 main_stop_flag = False
 
 
+def exec_command(cmd):
+    try:
+        ssh_client.exec_command(cmd)
+    except Exception as e:
+        print(e)
+        if not transport.is_active():
+            ssh_client.connect(ssh_host, ssh_port, ssh_username, ssh_password)
+            transport = ssh_client.get_transport()
+            transport.set_keepalive(60)
+            exec_command(cmd)
+
 def set_rate(rate):
     net_cond_reset()
-    ssh_client.exec_command(f'tc qdisc add dev {router_lan_interface} root handle 1: htb default 1')
-    ssh_client.exec_command(f'tc class add dev {router_lan_interface} parent 1: classid 1:1 htb rate 10MBps')
-    ssh_client.exec_command(f'tc class add dev {router_lan_interface} parent 1: classid 1:2 htb rate {rate}Kbit')
-    ssh_client.exec_command(f'tc filter add dev {router_lan_interface} protocol ip parent 1:0 prio 1 u32 match ip dst {device_ip} flowid 1:2')
+    exec_command(f'tc qdisc add dev {router_lan_interface} root handle 1: htb default 1')
+    exec_command(f'tc class add dev {router_lan_interface} parent 1: classid 1:1 htb rate 10MBps')
+    exec_command(f'tc class add dev {router_lan_interface} parent 1: classid 1:2 htb rate {rate}Kbit')
+    exec_command(f'tc filter add dev {router_lan_interface} protocol ip parent 1:0 prio 1 u32 match ip dst {device_ip} flowid 1:2')
 
 def net_cond_random_bw_configure(net_cond):
     max_rate = net_cond['max_rate']
@@ -116,12 +129,12 @@ def net_cond_configure_thread(net_cond):
 
 def net_cond_reset():
     cmd = f'tc qdisc del root dev {router_lan_interface}'
-    ssh_client.exec_command(cmd)
+    exec_command(cmd)
 
 # send heartbeat to maintain the ssh connection
 def send_heartbeat():
     while not main_stop_flag:
-        ssh_client.exec_command('echo 1')
+        exec_command('echo 1')
         time.sleep(60)
     
 if not os.path.exists('collection'):
@@ -129,8 +142,8 @@ if not os.path.exists('collection'):
 
 
 # start the heartbeat thread
-heartbeat_t = threading.Thread(target=send_heartbeat)
-heartbeat_t.start()
+# heartbeat_t = threading.Thread(target=send_heartbeat)
+# heartbeat_t.start()
 
 # play_list乱序
 random.shuffle(play_list)
@@ -160,5 +173,5 @@ for net_cond in net_cond_list:
     os.rename('output', f'collection/{net_cond_str}')
 net_cond_reset()
 
-main_stop_flag = True
-heartbeat_t.join()
+# main_stop_flag = True
+# heartbeat_t.join()
