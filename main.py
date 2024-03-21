@@ -145,6 +145,18 @@ if not os.path.exists('collection'):
 # heartbeat_t = threading.Thread(target=send_heartbeat)
 # heartbeat_t.start()
 
+pause_flag = False
+
+def capture_pause_signal():
+    global pause_flag
+    while not main_stop_flag:
+        if not pause_flag and input('press "p" to pause...\n') == 'p':
+            pause_flag = True
+        time.sleep(1)
+
+pause_t = threading.Thread(target=capture_pause_signal)
+pause_t.start()
+
 # play_list乱序
 random.shuffle(play_list)
 for net_cond in net_cond_list:
@@ -152,13 +164,16 @@ for net_cond in net_cond_list:
         for ip in play_list:
             for i in range(0, 4):
                 net_cond_reset()
+                if pause_flag:
+                    input('press any key to continue...\n')
+                    pause_flag = False
                 t = net_cond_configure_thread(net_cond,)
                 single_stop_flag = False
                 t.start()
                 ChromeDriver(head_less=True).play_one(ip, net_interface=net_interface, 
                                                       play_resolution=play_resolution, 
                                                       fullscreen_play=fullscreen_play,
-                                                      timeout=60*5)
+                                                      timeout=60*4)
                 single_stop_flag = True
                 t.join()
                 video_id = ip.split('/')[-1]
@@ -173,5 +188,6 @@ for net_cond in net_cond_list:
     os.rename('output', f'collection/{net_cond_str}')
 net_cond_reset()
 
-# main_stop_flag = True
+main_stop_flag = True
+ssh_client.close()
 # heartbeat_t.join()

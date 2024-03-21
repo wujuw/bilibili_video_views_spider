@@ -17,7 +17,7 @@ import math
 
 login_cookie = {
     "name": "SESSDATA",
-    "value": "6a191ca5,1725637545,90f19*32CjAVv9NF7N_f46LpFGriKktEeNKR-5T7nBR7YPWT2jv45DiS1FbD-y7I-wU5BbtlpzMSVmt0bkRtc3JzdEQ1NDUzSUR1VjNHQkpJazhJdGZMM011VzJxc2hWdU5TNjdwcGowdG4wVENydTZCdnprRTBJb1l1TEoxYU1pYVhnWUUydWNKWV9PM2l3IIEC",
+    "value": "65773f0a,1725897493,8158c*31CjDQxQjSa-LT76ZbrCtiIVxxmF-EoB2abYEOJaNbvF8bmEiWqmnjrWyeU9RsNyptTiESVjhYdklGMUs1RlRoYjZhYzJpN25HV2VxR3hEZEc0QW43djZ5Y0oycl83OVlsU0NEMlBXWi02OWZOb09JWGpabUZGUzFRSTk1MU5GczdPbU54bDA3UlBBIIEC",
     "domain": ".bilibili.com",
     "path": "/",
     "httpOnly": True,
