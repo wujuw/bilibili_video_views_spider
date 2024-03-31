@@ -15,7 +15,7 @@ play_list: # 视频播放列表
     - https://www.bilibili.com/video/BV1iG411D7jT
     - https://www.bilibili.com/video/BV1Uw411P7m4
 
-net_interface: 以太网 # 抓包网络接口
+net_interface: WLAN # 抓包网络接口
 
 play_resolutions: # 每次运行插件会用下列配置的的每种分辨率分布采集一轮上面的全部视频
     - auto # B站自动调节分辨率
@@ -32,29 +32,29 @@ ssh_port: 22
 ssh_username: root
 ssh_password: 4bcc8d55
 
-device_ip: 192.168.31.56 # 设备IP
+device_ip: 192.168.31.146 # 设备IP
 
 router_lan_interface: br-lan # 内网网卡上做限速，限制的是下载速度
 
 
 net_cond_list: # rate 单位Kbit
     # - 
-        type: random_bandwidth # 跑三遍，900个样本
-        max_rate: 6000 # 5000Kbps
-        min_rate: 600 # 100Kbps
-        change_interval: 3 # 5s
-        need_unpack: False
+    #     type: random_bandwidth # 跑三遍，900个样本
+    #     max_rate: 6000 # 5000Kbps
+    #     min_rate: 600 # 100Kbps
+    #     change_interval: 3 # 5s
+    #     need_unpack: False
     # -
     #     need_unpack: true # 由程序将该配置解包成多个配置，rates中每个rate转为一个配置
     #     type: constant_bandwidth # 3900个样本
     #     rates: [  
-    #             #1000, 2000,
-    #             # 3000, 4000, 5000,
-    #             #  8000, 10000, 
+    #             # 2000, 3000]
+    #             # 3000, 4000, 5000,]
+    #             #   8000, 10000, 
     #             20000, 50000, 100000]
     -
-        # need_unpack: False
-        # type: trace_bandwidth # 维持在一个速率（Kbps）持续一段时间（s）
-        # trace: [[100000, 10], [10000, 10], [100000, 1]]
-        # id: 1
+        need_unpack: False
+        type: trace_bandwidth # 维持在一个速率（Kbps）持续一段时间（s）
+        trace: [[100000, 10], [10000, 10], [100000, 1]]
+        id: 1
 

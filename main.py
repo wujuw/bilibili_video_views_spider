@@ -185,7 +185,7 @@ for net_cond in net_cond_list:
                     os.remove(net_log_name)
     # move ouput dir to collection/net_cond
     net_cond_str = net_cond_to_str(net_cond)
-    os.rename('output', f'collection/{net_cond_str}')
+    os.rename('output', f'collection/{net_cond_str}_wifi')
 net_cond_reset()
 
 main_stop_flag = True
